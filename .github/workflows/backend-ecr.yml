@@ -2,7 +2,7 @@ name: Build & Push Backend to ECR
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
     paths:
       - "backend/**"
 
@@ -12,7 +12,7 @@ jobs:
 
     env:
       AWS_REGION: ap-south-1
-      ECR_REPO: 047585400236.dkr.ecr.ap-south-1.amazonaws.com/dev-todo-app/backend
+      ECR_REPO: ${{ secrets.BACKEND_ECR_REPO }}
 
     steps:
     - name: Checkout code

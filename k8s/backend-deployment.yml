@@ -5,7 +5,13 @@ metadata:
   namespace: todo-app
 
 spec:
-  replicas: 2   # ← OK for stateless backend scaling
+  replicas: 2
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
 
   selector:
     matchLabels:
@@ -17,15 +23,26 @@ spec:
         app: backend
 
     spec:
+      # -------------------------
+      # Wait for DB before start
+      # -------------------------
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox
+        command:
+          - sh
+          - -c
+          - until nc -z postgres-service 5432; do echo waiting for db; sleep 2; done;
+
       containers:
       - name: backend
-        image: <YOUR_ECR_URL>/backend:latest
+        image: 047585400236.dkr.ecr.ap-south-1.amazonaws.com/dev-todo-app/backend:latest
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 8000
 
         env:
-        # DB Host (Postgres Service DNS)
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
@@ -44,7 +61,6 @@ spec:
               name: todo-app-config
               key: DB_NAME
 
-        # Secret values
         - name: DB_USER
           valueFrom:
             secretKeyRef:
@@ -57,7 +73,14 @@ spec:
               name: todo-app-secrets
               key: DB_PASSWORD
 
-        # Optional but important for debugging
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+
         readinessProbe:
           httpGet:
             path: /health

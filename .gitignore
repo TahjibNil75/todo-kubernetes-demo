@@ -247,3 +247,6 @@ $RECYCLE.BIN/
 
 # Ensure terraform.tfvars is not ignored
 terraform.tfvars
+
+
+node_modules

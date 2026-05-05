@@ -1,0 +1,4 @@
+region       = "ap-south-1"
+aws_profile  = "profile-name"
+env          = "dev"
+project_name = "todo-app"

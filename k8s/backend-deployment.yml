@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: todo-app
+
+spec:
+  replicas: 2   # ← OK for stateless backend scaling
+
+  selector:
+    matchLabels:
+      app: backend
+
+  template:
+    metadata:
+      labels:
+        app: backend
+
+    spec:
+      containers:
+      - name: backend
+        image: <YOUR_ECR_URL>/backend:latest
+
+        ports:
+        - containerPort: 8000
+
+        env:
+        # DB Host (Postgres Service DNS)
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: DB_HOST
+
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: DB_PORT
+
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: todo-app-config
+              key: DB_NAME
+
+        # Secret values
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: DB_USER
+
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: todo-app-secrets
+              key: DB_PASSWORD
+
+        # Optional but important for debugging
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10

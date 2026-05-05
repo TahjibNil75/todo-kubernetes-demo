@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    networks:
+      - todo-net
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - todo-net
+
+networks:
+  todo-net:
+    driver: bridge

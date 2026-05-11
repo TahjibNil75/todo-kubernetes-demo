@@ -13,7 +13,7 @@ jobs:
     env:
       AWS_REGION: ap-south-1
       ECR_REPO: ${{ secrets.FRONTEND_ECR_REPO }}
-      VITE_API_URL: http://backend-service:8000
+      VITE_API_URL: /api
 
     steps:
     - name: Checkout code

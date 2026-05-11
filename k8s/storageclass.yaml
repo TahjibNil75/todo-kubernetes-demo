@@ -1,0 +1,10 @@
+# storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-sc
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer   # Critical for EBS — waits for pod scheduling
+reclaimPolicy: Retain                     # Keeps data if PVC is deleted
+parameters:
+  type: gp3

@@ -3,9 +3,10 @@ kind: StatefulSet
 metadata:
   name: postgres
   namespace: todo-app
+
 spec:
   serviceName: postgres-service
-  replicas: 1   # ← PostgreSQL runs as single instance unless HA setup is added
+  replicas: 1
 
   selector:
     matchLabels:
@@ -29,50 +30,48 @@ spec:
           mountPath: /var/lib/postgresql/data
 
         env:
-        # DB name from ConfigMap
         - name: POSTGRES_DB
           valueFrom:
             configMapKeyRef:
               name: todo-app-config
               key: DB_NAME
 
-        # DB user from Secret
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
               name: todo-app-secrets
               key: DB_USER
 
-        # REQUIRED password from Secret
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: todo-app-secrets
               key: DB_PASSWORD
 
-        # Optional but recommended
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
 
         livenessProbe:
           exec:
-            command:
-              - sh
-              - -c
-              - pg_isready -U $POSTGRES_USER
+            command: ["sh", "-c", "pg_isready -U $POSTGRES_USER"]
           initialDelaySeconds: 30
           periodSeconds: 10
 
         readinessProbe:
           exec:
-            command:
-              - sh
-              - -c
-              - pg_isready -U $POSTGRES_USER
+            command: ["sh", "-c", "pg_isready -U $POSTGRES_USER"]
           initialDelaySeconds: 10
           periodSeconds: 5
 
-  volumes:
-  - name: postgres-storage
-    persistentVolumeClaim:
-      claimName: postgres-pvc   #  ← Must match PVC name
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes:
+        - ReadWriteOnce
+
+      storageClassName: ebs-sc   
+
+      resources:
+        requests:
+          storage: 10Gi

@@ -4,7 +4,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uuid
 
-app = FastAPI()
+# app = FastAPI()
+
+app = FastAPI(root_path="/api")
 
 app.add_middleware(
     CORSMiddleware,
